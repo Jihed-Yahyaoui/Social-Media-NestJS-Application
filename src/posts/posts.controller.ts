@@ -34,7 +34,7 @@ export class PostsController {
   ) {
     // Get userId from the access token cookie and create post
     const userID = this.authService.getUserIDFromToken(accessToken);
-    return this.postsService.create(createPostDto, userID);
+    return this.postsService.create(userID, createPostDto);
   }
 
   @Get()
@@ -54,7 +54,7 @@ export class PostsController {
   ) {
     // Get userId from the access token cookie and create post
     const userID = this.authService.getUserIDFromToken(accessToken);
-    return this.postsService.likePost(postID, userID);
+    return this.postsService.likePost(userID, postID);
   }
 
   @Put('unlike/:id')
@@ -64,6 +64,17 @@ export class PostsController {
   ) {
     // Get userId from the access token cookie and create post
     const userID = this.authService.getUserIDFromToken(accessToken);
-    return this.postsService.unlikePost(postID, userID);
+    return this.postsService.unlikePost(userID, postID);
+  }
+
+  @Put('edit/:id')
+  async editPost(
+    @Param('id', ParseUUIDPipe) postID: string,
+    @Cookie('accessToken') accessToken: string,
+    @Body() updatePostDto: UpdatePostDto,
+  ) {
+    // Get userID from the access token cookie and create post
+    const userID = this.authService.getUserIDFromToken(accessToken);
+    return this.postsService.editPost(userID, postID, updatePostDto);
   }
 }

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -9,7 +10,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Post } from './entities/post.entity';
 import { FindOneOptions, Repository } from 'typeorm';
 import { ImagesService } from 'src/images/images.service';
-import { User } from 'src/users/entities/user.entity';
 import { postPaginationSize } from 'src/common/constants/pagination-constants';
 import { NotificationsService } from 'src/notifications/notifications.service';
 import { UsersService } from 'src/users/users.service';
@@ -19,13 +19,11 @@ export class PostsService {
   constructor(
     @InjectRepository(Post)
     private postsRepository: Repository<Post>,
-    @InjectRepository(User)
-    private usersRepository: Repository<User>,
     private imagesService: ImagesService,
     private notificationsService: NotificationsService,
     private usersService: UsersService,
   ) {}
-  async create(createPostDto: CreatePostDto, userID: string) {
+  async create(userID: string, createPostDto: CreatePostDto) {
     const { content, type, images } = createPostDto;
     // Find user
     const postingUser = await this.usersService.findOne(userID, {
@@ -79,16 +77,16 @@ export class PostsService {
     return posts;
   }
 
-  async findOne(id: string, options?: FindOneOptions<Post>) {
+  async findOne(postID: string, options?: FindOneOptions<Post>) {
     const post = await this.postsRepository.findOne({
-      where: { postID: id },
+      where: { postID },
       ...options,
     });
     if (!post) throw new NotFoundException('Post Not Found');
     return post;
   }
 
-  async likePost(postID: string, userID: string) {
+  async likePost(userID: string, postID: string) {
     // Get the liked post and the user from the DB
     const [likingUser, likedPost] = await Promise.all([
       this.usersService.findOne(userID, {
@@ -115,7 +113,7 @@ export class PostsService {
       type: 'like',
     });
   }
-  async unlikePost(postID: string, userID: string) {
+  async unlikePost(userID: string, postID: string) {
     // Get the unliked post and the user from the DB
     let unlikedPost = await this.findOne(postID, {
       relations: ['likes', 'user'],
@@ -132,5 +130,12 @@ export class PostsService {
     unlikedPost.likeCount--;
 
     await this.postsRepository.save(unlikedPost);
+  }
+  async editPost(userID: string, postID: string, updatePostDto: UpdatePostDto) {
+    const editedPost = await this.findOne(postID, { relations: ['user'] });
+
+    if (editedPost.user.userID !== userID)
+      throw new ForbiddenException('You cannot edit this post!');
+    await this.postsRepository.update({ postID }, updatePostDto);
   }
 }

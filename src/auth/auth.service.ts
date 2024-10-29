@@ -9,8 +9,7 @@ import { Repository } from 'typeorm';
 import { SignupUserDto } from 'src/users/dto/signup-user.dto';
 import { SigninUserDto } from 'src/users/dto/signin-user.dto';
 import { JwtService } from '@nestjs/jwt';
-
-type cookies = { accessToken: string; refreshToken: string };
+import { tokens } from './types/auth.types';
 
 @Injectable()
 export class AuthService {
@@ -21,7 +20,7 @@ export class AuthService {
   ) {}
 
   // This method creates an accessToken and a refreshToken
-  async jwtSign(userID: string, email: string): Promise<cookies> {
+  async jwtSign(userID: string, email: string): Promise<tokens> {
     const accessToken = await this.jwtService.signAsync(
       { userID, email },
       { secret: 'accesstoken', expiresIn: '30m' },
@@ -40,7 +39,7 @@ export class AuthService {
     return userID;
   }
 
-  async signup(signupUserDto: SignupUserDto): Promise<cookies> {
+  async signup(signupUserDto: SignupUserDto): Promise<tokens> {
     // Verify if email exists
     const duplicateUser = await this.usersRepository.findOneBy({
       email: signupUserDto.email,
@@ -49,7 +48,7 @@ export class AuthService {
     if (duplicateUser)
       throw new ForbiddenException('This email already exists!');
 
-    // Create user and cookies
+    // Create user and tokens
     const { userID, email } = await this.usersRepository.save({
       ...signupUserDto,
       comments: [],
@@ -63,8 +62,8 @@ export class AuthService {
     return await this.jwtSign(userID, email);
   }
 
-  async signin(signinUserDTO: SigninUserDto): Promise<cookies> {
-    // Find user and create cookies
+  async signin(signinUserDTO: SigninUserDto): Promise<tokens> {
+    // Find user and create tokens
     const { userID, email } = await this.usersRepository.findOne({
       where: signinUserDTO,
     });

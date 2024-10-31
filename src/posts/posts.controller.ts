@@ -11,6 +11,7 @@ import {
   ParseUUIDPipe,
   NotFoundException,
   Put,
+  Delete,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -32,7 +33,6 @@ export class PostsController {
     @Body() createPostDto: CreatePostDto,
     @Cookie('accessToken') accessToken: string,
   ) {
-    // Get userId from the access token cookie and create post
     const userID = this.authService.getUserIDFromToken(accessToken);
     return this.postsService.create(userID, createPostDto);
   }
@@ -52,7 +52,6 @@ export class PostsController {
     @Param('id', ParseUUIDPipe) postID: string,
     @Cookie('accessToken') accessToken: string,
   ) {
-    // Get userId from the access token cookie and create post
     const userID = this.authService.getUserIDFromToken(accessToken);
     return this.postsService.likePost(userID, postID);
   }
@@ -62,7 +61,6 @@ export class PostsController {
     @Param('id', ParseUUIDPipe) postID: string,
     @Cookie('accessToken') accessToken: string,
   ) {
-    // Get userId from the access token cookie and create post
     const userID = this.authService.getUserIDFromToken(accessToken);
     return this.postsService.unlikePost(userID, postID);
   }
@@ -73,8 +71,16 @@ export class PostsController {
     @Cookie('accessToken') accessToken: string,
     @Body() updatePostDto: UpdatePostDto,
   ) {
-    // Get userID from the access token cookie and create post
     const userID = this.authService.getUserIDFromToken(accessToken);
     return this.postsService.editPost(userID, postID, updatePostDto);
+  }
+
+  @Delete(':id')
+  async deletePost(
+    @Param('id', ParseUUIDPipe) postID: string,
+    @Cookie('accessToken') accessToken: string,
+  ) {
+    const userID = this.authService.getUserIDFromToken(accessToken);
+    return this.postsService.deletePost(userID, postID);
   }
 }

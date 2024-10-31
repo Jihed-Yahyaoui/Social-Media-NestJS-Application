@@ -2,6 +2,7 @@ import { Post } from 'src/posts/entities/post.entity';
 import { User } from 'src/users/entities/user.entity';
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -24,6 +25,6 @@ export class Comment {
   @Column()
   content: string;
 
-  @Column()
-  dateCreated: Date = new Date();
+  @CreateDateColumn()
+  dateCreated: Date;
 }

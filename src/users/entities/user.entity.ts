@@ -5,6 +5,7 @@ import { Post } from 'src/posts/entities/post.entity';
 import { Skill } from 'src/skills/entities/skill.entity';
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinTable,
   ManyToMany,
@@ -33,7 +34,7 @@ export class User {
   @Column({ nullable: false, default: 'user' })
   role: roles;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn()
   dateJoined: string;
 
   @OneToMany(() => Post, (post) => post.user)

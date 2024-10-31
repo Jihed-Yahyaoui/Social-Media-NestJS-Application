@@ -1,5 +1,6 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   JoinTable,
@@ -35,7 +36,7 @@ export class Post {
   @Column()
   type: postType;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn()
   dateCreated: Date;
 
   @OneToMany(() => Comment, (comment) => comment.post)

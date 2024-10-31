@@ -10,14 +10,24 @@ import {
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
+import { Cookie } from 'src/common/decorators/cookie.decorator';
+import { AuthService } from 'src/auth/auth.service';
 
 @Controller('comments')
 export class CommentsController {
-  constructor(private readonly commentsService: CommentsService) {}
+  constructor(
+    private readonly commentsService: CommentsService,
+    private authService: AuthService,
+  ) {}
 
-  @Post()
-  create(@Body() createCommentDto: CreateCommentDto) {
-    return this.commentsService.create(createCommentDto);
+  @Post(':id')
+  create(
+    @Cookie('accessToken') accessToken: string,
+    @Body() createCommentDto: CreateCommentDto,
+    @Param('id') postID: string,
+  ) {
+    const userID = this.authService.getUserIDFromToken(accessToken);
+    return this.commentsService.create(userID, postID, createCommentDto);
   }
 
   @Get()

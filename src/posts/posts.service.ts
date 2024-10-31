@@ -72,7 +72,7 @@ export class PostsService {
     const posts = await this.postsRepository.find({
       take: postPaginationSize,
       skip,
-      relations: ['user'],
+      relations: ['user', ''],
     });
     return posts;
   }
@@ -137,5 +137,12 @@ export class PostsService {
     if (editedPost.user.userID !== userID)
       throw new ForbiddenException('You cannot edit this post!');
     await this.postsRepository.update({ postID }, updatePostDto);
+  }
+  async deletePost(userID: string, postID: string) {
+    const deletedPost = await this.findOne(postID, { relations: ['user'] });
+
+    if (deletedPost.user.userID !== userID)
+      throw new ForbiddenException('You cannot delete this post!');
+    await this.postsRepository.delete({ postID });
   }
 }

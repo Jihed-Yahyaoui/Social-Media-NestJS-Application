@@ -23,6 +23,8 @@ export class PostsService {
     private notificationsService: NotificationsService,
     private usersService: UsersService,
   ) {}
+
+  // Create post containing corresponding user, add images to DB, and send notifications to followers
   async create(userID: string, createPostDto: CreatePostDto) {
     const { content, type, images } = createPostDto;
     // Find user
@@ -67,6 +69,7 @@ export class PostsService {
     return createdPost;
   }
 
+  // Get all posts with pagination
   async findAll(page: number) {
     const skip = (page - 1) * postPaginationSize;
     const posts = await this.postsRepository.find({
@@ -77,6 +80,7 @@ export class PostsService {
     return posts;
   }
 
+  // Get one post with options, this method is used by other methods in this service as well as other services
   async findOne(postID: string, options?: FindOneOptions<Post>) {
     const post = await this.postsRepository.findOne({
       where: { postID },
@@ -86,6 +90,7 @@ export class PostsService {
     return post;
   }
 
+  // Add like to post and send a notification to the post creator
   async likePost(userID: string, postID: string) {
     // Get the liked post and the user from the DB
     const [likingUser, likedPost] = await Promise.all([
@@ -113,6 +118,8 @@ export class PostsService {
       type: 'like',
     });
   }
+
+  // Remove like from post
   async unlikePost(userID: string, postID: string) {
     // Get the unliked post and the user from the DB
     let unlikedPost = await this.findOne(postID, {
@@ -131,6 +138,8 @@ export class PostsService {
 
     await this.postsRepository.save(unlikedPost);
   }
+
+  // Edit post content (can only edit text content for now)
   async editPost(userID: string, postID: string, updatePostDto: UpdatePostDto) {
     const editedPost = await this.findOne(postID, { relations: ['user'] });
 
@@ -138,6 +147,8 @@ export class PostsService {
       throw new ForbiddenException('You cannot edit this post!');
     await this.postsRepository.update({ postID }, updatePostDto);
   }
+
+  // Delete post along with likes and comments (cascade in entity)
   async deletePost(userID: string, postID: string) {
     const deletedPost = await this.findOne(postID, { relations: ['user'] });
 

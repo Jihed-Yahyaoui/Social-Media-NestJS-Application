@@ -39,9 +39,9 @@ export class Post {
   @CreateDateColumn()
   dateCreated: Date;
 
-  @OneToMany(() => Comment, (comment) => comment.post)
+  @OneToMany(() => Comment, (comment) => comment.post, { cascade: ['remove'] })
   comments: Comment[];
 
-  @OneToMany(() => Image, (image) => image.post)
+  @OneToMany(() => Image, (image) => image.post, { cascade: ['remove'] })
   images: Image[];
 }
